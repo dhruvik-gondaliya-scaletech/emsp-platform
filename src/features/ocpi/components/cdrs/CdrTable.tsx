@@ -27,7 +27,7 @@ export function CdrTable({ cdrs }: CdrTableProps) {
                     {cdrs && cdrs.length > 0 ? (
                         cdrs.map((cdr, i) => (
                             <motion.tr
-                                key={cdr.id}
+                                key={`${cdr.id}-${i}`}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 }}
@@ -42,7 +42,7 @@ export function CdrTable({ cdrs }: CdrTableProps) {
                                     </div>
                                 </td>
                                 <td className="px-8 py-5 text-muted-foreground font-medium">
-                                    {(cdr.total_time / 60).toFixed(0)} mins
+                                    {(cdr.total_time * 60).toFixed(0)} mins
                                 </td>
                                 <td className="px-8 py-5">
                                     <div className="flex items-center gap-2 text-emerald-500">
@@ -69,6 +69,6 @@ export function CdrTable({ cdrs }: CdrTableProps) {
                     )}
                 </tbody>
             </table>
-        </div>
+        </div >
     );
 }
