@@ -5,12 +5,50 @@ import { ocpiService } from "@/services/ocpi.service";
 import { Loader2, Zap } from "lucide-react";
 import { PageWrapper } from "@/components/shared/PageWrapper";
 import { SessionItem } from "./components/SessionItem";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import RealTimeService from "@/lib/realtime.service";
 
 export function SessionsContainer() {
-    const { data: sessions, isLoading } = useQuery({
+    const [actionPendingId, setActionPendingId] = useState<string | null>(null);
+
+    const { data: sessions, isLoading, refetch } = useQuery({
         queryKey: ["sessions"],
         queryFn: () => ocpiService.getSessions(),
     });
+
+    useEffect(() => {
+        const handleSessionUpdate = (event: any) => {
+            console.log("Real-time session update:", event);
+            refetch();
+            // Optional: toast only on specific significant changes if desired
+        };
+
+        RealTimeService.addEventListener("transaction-start", handleSessionUpdate);
+        RealTimeService.addEventListener("transaction-stop", handleSessionUpdate);
+
+        return () => {
+            RealTimeService.removeEventListener("transaction-start", handleSessionUpdate);
+            RealTimeService.removeEventListener("transaction-stop", handleSessionUpdate);
+        };
+    }, [refetch]);
+
+    const handleStopSession = async (sessionId: string) => {
+        setActionPendingId(sessionId);
+        try {
+            const res = await ocpiService.stopRemoteSession({ session_id: sessionId });
+            if (res.result === 'ACCEPTED') {
+                toast.success('Stop command accepted');
+                setTimeout(() => refetch(), 1000); // Give CPO time to update
+            } else {
+                toast.error(`Rejected: ${res.message || 'Unknown error'}`);
+            }
+        } catch (error) {
+            toast.error("Failed to stop session");
+        } finally {
+            setActionPendingId(null);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -28,7 +66,13 @@ export function SessionsContainer() {
             <div className="grid grid-cols-1 gap-4">
                 {sessions?.items && sessions.items.length > 0 ? (
                     sessions.items.map((session, index) => (
-                        <SessionItem key={session.id} session={session} index={index} />
+                        <SessionItem
+                            key={session.id}
+                            session={session}
+                            index={index}
+                            onStop={() => handleStopSession(session.id)}
+                            isPending={actionPendingId === session.id}
+                        />
                     ))
                 ) : (
                     <div className="glass-card rounded-3xl p-12 flex flex-col items-center justify-center text-center space-y-4">

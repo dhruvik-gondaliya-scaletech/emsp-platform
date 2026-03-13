@@ -8,6 +8,8 @@ import { useState, useEffect, useRef } from "react";
 import { PageWrapper } from "@/components/shared/PageWrapper";
 import { LogLine } from "./components/logs/LogLine";
 
+import RealTimeService from "@/lib/realtime.service";
+
 export function LogsContainer() {
     const [filter, setFilter] = useState('ALL');
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -15,8 +17,20 @@ export function LogsContainer() {
     const { data: logs, isLoading, refetch } = useQuery({
         queryKey: ["logs"],
         queryFn: () => ocpiService.getLogs(),
-        refetchInterval: 5000,
     });
+
+    useEffect(() => {
+        const handleLogEvent = (entry: any) => {
+            console.log("Real-time log received:", entry);
+            refetch();
+        };
+
+        RealTimeService.addEventListener("ocpi-log", handleLogEvent);
+
+        return () => {
+            RealTimeService.removeEventListener("ocpi-log", handleLogEvent);
+        };
+    }, [refetch]);
 
     useEffect(() => {
         if (scrollRef.current) {

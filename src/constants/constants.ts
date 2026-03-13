@@ -64,7 +64,7 @@ export const AUTH_CONFIG = {
 }
 
 export const WEBSOCKET_CONFIG = {
-    url: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3000",
+    url: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3003",
     ocppUrl: process.env.NEXT_PUBLIC_CSMS_WEBSOCKET_BASE_URL || "ws://localhost:9220/ocpp",
 }
 

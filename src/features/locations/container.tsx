@@ -27,10 +27,12 @@ export function LocationsContainer() {
 
         RealTimeService.addEventListener("station-status-change", handleStatusChange);
         RealTimeService.addEventListener("connector-status-change", handleStatusChange);
+        RealTimeService.addEventListener("transaction-start", handleStatusChange);
 
         return () => {
             RealTimeService.removeEventListener("station-status-change", handleStatusChange);
             RealTimeService.removeEventListener("connector-status-change", handleStatusChange);
+            RealTimeService.removeEventListener("transaction-start", handleStatusChange);
         };
     }, [refetch]);
 

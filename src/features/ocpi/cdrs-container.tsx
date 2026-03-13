@@ -6,11 +6,27 @@ import { Loader2, Download, Filter, Search } from "lucide-react";
 import { PageWrapper } from "@/components/shared/PageWrapper";
 import { CdrTable } from "./components/cdrs/CdrTable";
 
+import { useEffect } from "react";
+import RealTimeService from "@/lib/realtime.service";
+
 export function CdrsContainer() {
-    const { data: cdrs, isLoading } = useQuery({
+    const { data: cdrs, isLoading, refetch } = useQuery({
         queryKey: ["cdrs"],
         queryFn: () => ocpiService.getCdrs(),
     });
+
+    useEffect(() => {
+        const handleCdrUpdate = (event: any) => {
+            console.log("Real-time CDR update:", event);
+            refetch();
+        };
+
+        RealTimeService.addEventListener("ocpi-log", handleCdrUpdate);
+
+        return () => {
+            RealTimeService.removeEventListener("ocpi-log", handleCdrUpdate);
+        };
+    }, [refetch]);
 
     if (isLoading) {
         return (

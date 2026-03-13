@@ -1,15 +1,17 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { Zap, Calendar, ChevronRight } from "lucide-react";
+import { Zap, Calendar, ChevronRight, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 interface SessionItemProps {
     session: any;
     index: number;
+    onStop: () => void;
+    isPending: boolean;
 }
 
-export function SessionItem({ session, index }: SessionItemProps) {
+export function SessionItem({ session, index, onStop, isPending }: SessionItemProps) {
     return (
         <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -52,6 +54,22 @@ export function SessionItem({ session, index }: SessionItemProps) {
                 </div>
 
                 <div className="flex items-center gap-4">
+                    {session.status === 'ACTIVE' && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onStop();
+                            }}
+                            disabled={isPending}
+                            className="px-6 py-2 bg-destructive/20 text-destructive text-xs font-bold rounded-xl hover:bg-destructive hover:text-destructive-foreground transition-all disabled:opacity-50 flex items-center gap-2"
+                        >
+                            {isPending ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                                "STOP"
+                            )}
+                        </button>
+                    )}
                     <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
             </div>
